@@ -72,7 +72,7 @@ import Distribution.Types.ForeignLib
 
 import Distribution.Types.Component
 import Distribution.Types.ComponentRequestedSpec
-import Distribution.Types.Dependency
+import Distribution.Types.LibDependency
 import Distribution.Types.PackageId
 import Distribution.Types.ComponentName
 import Distribution.Types.PackageName
@@ -389,10 +389,10 @@ enabledBuildInfos pkg enabled =
 -- * Utils
 -- ------------------------------------------------------------
 
-allBuildDepends :: PackageDescription -> [Dependency]
+allBuildDepends :: PackageDescription -> [LibDependency]
 allBuildDepends = targetBuildDepends <=< allBuildInfo
 
-enabledBuildDepends :: PackageDescription -> ComponentRequestedSpec -> [Dependency]
+enabledBuildDepends :: PackageDescription -> ComponentRequestedSpec -> [LibDependency]
 enabledBuildDepends spec pd = targetBuildDepends =<< enabledBuildInfos spec pd
 
 

@@ -54,10 +54,10 @@ import Prelude ()
 import Distribution.Compat.Prelude
 
 import Distribution.Types.BuildInfo
-import Distribution.Types.Dependency
 import Distribution.Types.ForeignLib
 import Distribution.Types.ForeignLibType
 import Distribution.Types.UnqualComponentName
+import Distribution.Types.LibDependency
 import Distribution.Types.CondTree
 import Distribution.Types.PackageId
 import Distribution.ParseUtils hiding (parseFields)
@@ -646,7 +646,7 @@ constraintFieldNames = ["build-depends"]
 -- they add and define an accessor that specifies what the dependencies
 -- are.  This way we would completely reuse the parsing knowledge from the
 -- field descriptor.
-parseConstraint :: Field -> ParseResult [Dependency]
+parseConstraint :: Field -> ParseResult [LibDependency]
 parseConstraint (F l n v)
     | n `elem` constraintFieldNames = runP l n (parseCommaList parse) v
 parseConstraint f = userBug $ "Constraint was expected (got: " ++ show f ++ ")"
@@ -915,12 +915,12 @@ parseGenericPackageDescription file = do
     getBody :: PackageDescription
             -> PM ([SourceRepo], [Flag]
                   ,Maybe SetupBuildInfo
-                  ,(Maybe (CondTree ConfVar [Dependency] Library))
-                  ,[(UnqualComponentName, CondTree ConfVar [Dependency] Library)]
-                  ,[(UnqualComponentName, CondTree ConfVar [Dependency] ForeignLib)]
-                  ,[(UnqualComponentName, CondTree ConfVar [Dependency] Executable)]
-                  ,[(UnqualComponentName, CondTree ConfVar [Dependency] TestSuite)]
-                  ,[(UnqualComponentName, CondTree ConfVar [Dependency] Benchmark)])
+                  ,(Maybe (CondTree ConfVar [LibDependency] Library))
+                  ,[(UnqualComponentName, CondTree ConfVar [LibDependency] Library)]
+                  ,[(UnqualComponentName, CondTree ConfVar [LibDependency] ForeignLib)]
+                  ,[(UnqualComponentName, CondTree ConfVar [LibDependency] Executable)]
+                  ,[(UnqualComponentName, CondTree ConfVar [LibDependency] TestSuite)]
+                  ,[(UnqualComponentName, CondTree ConfVar [LibDependency] Benchmark)])
     getBody pkg = peekField >>= \mf -> case mf of
       Just (Section line_no sec_type sec_label sec_fields)
         | sec_type == "executable" -> do
@@ -1091,7 +1091,7 @@ parseGenericPackageDescription file = do
     -- We have to recurse down into conditionals and we treat fields that
     -- describe dependencies specially.
     collectFields :: ([Field] -> PM a) -> [Field]
-                  -> PM (CondTree ConfVar [Dependency] a)
+                  -> PM (CondTree ConfVar [LibDependency] a)
     collectFields parser allflds = do
 
         let simplFlds = [ F l n v | F l n v <- allflds ]
@@ -1167,10 +1167,10 @@ parseGenericPackageDescription file = do
 
     checkForUndefinedFlags ::
         [Flag] ->
-        Maybe (CondTree ConfVar [Dependency] Library) ->
-        [(UnqualComponentName, CondTree ConfVar [Dependency] Library)] ->
-        [(UnqualComponentName, CondTree ConfVar [Dependency] Executable)] ->
-        [(UnqualComponentName, CondTree ConfVar [Dependency] TestSuite)] ->
+        Maybe (CondTree ConfVar [LibDependency] Library) ->
+        [(UnqualComponentName, CondTree ConfVar [LibDependency] Library)] ->
+        [(UnqualComponentName, CondTree ConfVar [LibDependency] Executable)] ->
+        [(UnqualComponentName, CondTree ConfVar [LibDependency] TestSuite)] ->
         PM ()
     checkForUndefinedFlags flags mlib sub_libs exes tests = do
         let definedFlags = map flagName flags
