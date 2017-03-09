@@ -5,6 +5,7 @@ module Distribution.Types.Component (
     foldComponent,
     componentBuildInfo,
     componentBuildable,
+    lensBuildInfo,
     componentName,
     partitionComponents,
 ) where
@@ -61,6 +62,14 @@ foldComponent _ _ _ _ f (CBench bch) = f bch
 componentBuildInfo :: Component -> BuildInfo
 componentBuildInfo =
   foldComponent libBuildInfo foreignLibBuildInfo buildInfo testBuildInfo benchmarkBuildInfo
+
+lensBuildInfo :: (BuildInfo -> BuildInfo) -> (Component -> Component)
+lensBuildInfo f = \c -> case c of
+  (CLib   lib)  -> CLib   $ lib  { libBuildInfo        = f $ libBuildInfo lib         }
+  (CFLib  flib) -> CFLib  $ flib { foreignLibBuildInfo = f $ foreignLibBuildInfo flib }
+  (CExe   exe)  -> CExe   $ exe  { buildInfo           = f $ buildInfo exe            }
+  (CTest  tst)  -> CTest  $ tst  { testBuildInfo       = f $ testBuildInfo tst        }
+  (CBench bch)  -> CBench $ bch  { benchmarkBuildInfo  = f $ benchmarkBuildInfo bch   }
 
 -- | Is a component buildable (i.e., not marked with @buildable: False@)?
 -- See also this note in
